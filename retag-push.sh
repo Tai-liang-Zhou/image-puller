@@ -64,9 +64,15 @@ require_cmd() {
 }
 
 # Map a source image reference to its target by keeping only the last path
-# segment:
+# segment. When that segment carries no real tag (none, or `:latest`) and its
+# name contains an underscore, the part after the LAST underscore becomes the
+# tag:
 #   registry.example.com/team/foo:1.2.3 -> $TARGET_PREFIX/foo:1.2.3
 #   team/foo                            -> $TARGET_PREFIX/foo:latest
+#   team/foo_bar                        -> $TARGET_PREFIX/foo:bar
+#   team/foo_bar:latest                 -> $TARGET_PREFIX/foo:bar
+#   team/foo_bar_baz                    -> $TARGET_PREFIX/foo_bar:baz
+#   team/foo_bar:1.2.3                  -> $TARGET_PREFIX/foo_bar:1.2.3  (explicit tag wins)
 #   foo@sha256:abcd...                  -> refused (return 1); digests can't be retagged
 # Arguments: $1 = source image reference
 # Returns:   0 and prints the target reference; 1 if the source is a digest
@@ -74,12 +80,17 @@ require_cmd() {
 to_target_ref() {
   local src="$1"
   local last="${src##*/}"
+  local name tag
   case "$last" in
     *@*) return 1 ;;
-    *:*) ;;
-    *)   last="$last:latest" ;;
+    *:*) name="${last%:*}"; tag="${last##*:}" ;;
+    *)   name="$last";      tag="latest" ;;
   esac
-  printf '%s/%s\n' "$TARGET_PREFIX" "$last"
+  if [[ "$tag" == "latest" && "$name" == *_* ]]; then
+    tag="${name##*_}"
+    name="${name%_*}"
+  fi
+  printf '%s/%s:%s\n' "$TARGET_PREFIX" "$name" "$tag"
 }
 
 # Print source refs recorded in a tar's manifest.json without loading it

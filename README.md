@@ -57,7 +57,7 @@ The script never handles credentials — run `docker login` yourself first.
 ### Behaviour
 
 - The image name comes from the tar's contents, not from its filename. A tar holding several images has every one of them retagged and pushed.
-- Only the last path segment of the source name is kept (`team/foo` -> `foo`). A name with no tag gets `:latest`. A digest reference (`name@sha256:…`) cannot be retagged and is reported as a failure.
+- Only the last path segment of the source name is kept (`team/foo` -> `foo`). A name with no tag (or tagged `latest`) whose last segment contains an underscore is split at the last underscore into name and tag (`team/foo_bar` -> `foo:bar`, `foo_bar_baz` -> `foo_bar:baz`); an explicit tag is kept as-is (`foo_bar:1.2.3` stays `foo_bar:1.2.3`). Otherwise a name with no tag gets `:latest`. A digest reference (`name@sha256:…`) cannot be retagged and is reported as a failure.
 - A tar that contains an unnamed image (saved by ID) is reported as a failure; any named images in the same tar are still processed.
 - Each tar is processed independently. A failure (load, tag, push, unmappable name) is recorded and the run continues with the next tar.
 - A warning is printed if the target tag already exists locally before it is overwritten.
@@ -139,7 +139,7 @@ docker login harbor.example.com
 ### 行為說明
 
 - Image 名稱來自 tar 的內容，而不是 tar 的檔名。一個 tar 裡有多個 image 時，每一個都會被重新打 tag 並推送。
-- 來源名稱只保留最後一段路徑（`team/foo` -> `foo`）。沒有 tag 的名稱會補上 `:latest`。Digest 形式（`name@sha256:…`）無法重新打 tag，會被記為失敗。
+- 來源名稱只保留最後一段路徑（`team/foo` -> `foo`）。沒有 tag（或 tag 為 `latest`）且最後一段含底線的名稱，會以最後一個底線切成名稱與 tag（`team/foo_bar` -> `foo:bar`、`foo_bar_baz` -> `foo_bar:baz`）；有明確 tag 的則原樣保留（`foo_bar:1.2.3` 不變）。其餘沒有 tag 的名稱會補上 `:latest`。Digest 形式（`name@sha256:…`）無法重新打 tag，會被記為失敗。
 - tar 內若有未命名的 image（以 ID 儲存），該 tar 記為失敗，但同一個 tar 裡有名稱的 image 仍會照常處理。
 - 每個 tar 各自獨立。任何一步失敗（load、tag、push、名稱無法對應）都會被記錄下來，然後繼續處理下一個 tar。
 - 若目標 tag 在本地已存在，覆蓋前會先印出警告。
