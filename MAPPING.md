@@ -18,7 +18,8 @@
 
 以版號體系判斷：帶 `5.1.0.19` 的是 vendor 自家建置，帶各自上游版號的是第三方。
 注意 `httpd`、`rabbitmq`、`spark`、`oracledb-exporter`、`sftp` 雖然是開源軟體，
-但都掛 vendor 的建置版號，因此歸在 vendor 建置。
+但都掛 vendor 的建置版號，因此歸在 vendor 建置。`rabbitmq_readiness` 版號雖
+自成體系（`v2.0`），但經確認為 vendor 自製，同樣歸在 vendor 建置。
 
 ## 第三方上游元件（7）
 
@@ -32,13 +33,7 @@
 | `prometheus_v2.36.2` | `harbor.example.com/myproject/prometheus:v2.36.2` | Prometheus |
 | `tempo_2.8.2` | `harbor.example.com/myproject/tempo:2.8.2` | Grafana Tempo |
 
-## 需人工確認（1）
-
-| 來源 image | 目標 image | 說明 |
-| --- | --- | --- |
-| `rabbitmq_readiness_v2.0` | `harbor.example.com/myproject/rabbitmq_readiness:v2.0` | 版號自成體系（`v2.0`），但看名稱像是 rabbitmq 的 readiness probe 輔助工具，無法從檔名判斷是上游元件還是 vendor 自製 |
-
-## Vendor 建置（48）
+## Vendor 建置（49）
 
 | 來源 image | 目標 image |
 | --- | --- |
@@ -74,6 +69,7 @@
 | `psmonitor_5.1.0.19.0` | `harbor.example.com/myproject/psmonitor:5.1.0.19` |
 | `queuepublisher_5.1.0.19.0` | `harbor.example.com/myproject/queuepublisher:5.1.0.19` |
 | `rabbitmq_5.1.0.19.0` | `harbor.example.com/myproject/rabbitmq:5.1.0.19` |
+| `rabbitmq_readiness_v2.0` | `harbor.example.com/myproject/rabbitmq_readiness:v2.0` |
 | `recipeexecutor_5.1.0.19` | `harbor.example.com/myproject/recipeexecutor:5.1.0.19` |
 | `rsapi_5.1.0.19.0` | `harbor.example.com/myproject/rsapi:5.1.0.19` |
 | `rsprbdb_5.1.0.19` | `harbor.example.com/myproject/rsprbdb:5.1.0.19` |
