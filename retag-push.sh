@@ -76,6 +76,8 @@ require_cmd() {
 #   team/foo_bar:1.2.3                  -> $TARGET_PREFIX/foo_bar:1.2.3  (explicit tag wins)
 #   team/kd-table-purge_1.0             -> $TARGET_PREFIX/kd_table_purge:1.0
 #   team/foo-bar:v1-rc1                 -> $TARGET_PREFIX/foo_bar:v1-rc1 (tag keeps its hyphen)
+#   team/foo_5.1.0.19.0                 -> $TARGET_PREFIX/foo:5.1.0.19   (5th segment .0 dropped)
+#   team/foo_5.1.0.19.3                 -> $TARGET_PREFIX/foo:5.1.0.19.3 (not .0, kept)
 #   foo@sha256:abcd...                  -> refused (return 1); digests can't be retagged
 # Arguments: $1 = source image reference
 # Returns:   0 and prints the target reference; 1 if the source is a digest
@@ -94,6 +96,12 @@ to_target_ref() {
     name="${name%_*}"
   fi
   name="${name//-/_}"
+  # A five-segment numeric version ending in .0 is the same build as its
+  # four-segment form; anything else (including upstream 3-segment versions
+  # like 12.2.0) is left exactly as it is.
+  if [[ "$tag" =~ ^[0-9]+(\.[0-9]+){3}\.0$ ]]; then
+    tag="${tag%.0}"
+  fi
   printf '%s/%s:%s\n' "$TARGET_PREFIX" "$name" "$tag"
 }
 

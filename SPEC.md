@@ -53,6 +53,7 @@
 - **Retag 規則：** 由單一函式 `to_target_ref` 實作，把來源 ref 對應到目標 ref。保留來源 ref 以 `/` 分隔的最後一段，前面接上 `target_prefix`。函式拒絕某個 ref 時回傳非零，呼叫端會把該 image 記為失敗。邊界情況（已決定）：
   - 沒有 `:tag`（或 tag 為 `latest`）且名稱含 `_` 的 ref，以最後一個底線切成 `name:tag`（`foo_bar` -> `foo:bar`、`foo_bar_baz` -> `foo_bar:baz`）；明確指定且非 `latest` 的 tag 永遠不會被改寫；
   - 完成上述切割後，名稱中剩餘的 `-` 一律正規化為 `_`（`kd-table-purge_1.0` -> `kd_table_purge:1.0`）；tag 不做此轉換，`foo-bar:v1-rc1` 會得到 `foo_bar:v1-rc1`；
+  - tag 若為五段純數字且結尾為 `.0`，去掉最後一段（`5.1.0.19.0` -> `5.1.0.19`）；限定五段是為了避免動到上游三段版號（`12.2.0`、`3.5.0`、`v0.5.0` 皆不變）；
   - 其餘沒有 `:tag` 的 ref 預設補上 `:latest`；
   - digest 形式的 ref（`name@sha256:…`）會被拒絕——digest 無法被 tag，腳本也不會憑空捏造一個 tag。
 - **衝突檢查：** 在 `docker tag` 之前，用 `docker image inspect <target>` 偵測本機是否已有該 tag；若存在則發出警告，然後照樣 tag（覆寫）。
