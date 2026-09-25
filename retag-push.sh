@@ -66,13 +66,16 @@ require_cmd() {
 # Map a source image reference to its target by keeping only the last path
 # segment. When that segment carries no real tag (none, or `:latest`) and its
 # name contains an underscore, the part after the LAST underscore becomes the
-# tag:
+# tag. Any hyphen left in the name is then normalised to an underscore; the
+# tag is never rewritten:
 #   registry.example.com/team/foo:1.2.3 -> $TARGET_PREFIX/foo:1.2.3
 #   team/foo                            -> $TARGET_PREFIX/foo:latest
 #   team/foo_bar                        -> $TARGET_PREFIX/foo:bar
 #   team/foo_bar:latest                 -> $TARGET_PREFIX/foo:bar
 #   team/foo_bar_baz                    -> $TARGET_PREFIX/foo_bar:baz
 #   team/foo_bar:1.2.3                  -> $TARGET_PREFIX/foo_bar:1.2.3  (explicit tag wins)
+#   team/kd-table-purge_1.0             -> $TARGET_PREFIX/kd_table_purge:1.0
+#   team/foo-bar:v1-rc1                 -> $TARGET_PREFIX/foo_bar:v1-rc1 (tag keeps its hyphen)
 #   foo@sha256:abcd...                  -> refused (return 1); digests can't be retagged
 # Arguments: $1 = source image reference
 # Returns:   0 and prints the target reference; 1 if the source is a digest
@@ -90,6 +93,7 @@ to_target_ref() {
     tag="${name##*_}"
     name="${name%_*}"
   fi
+  name="${name//-/_}"
   printf '%s/%s:%s\n' "$TARGET_PREFIX" "$name" "$tag"
 }
 
